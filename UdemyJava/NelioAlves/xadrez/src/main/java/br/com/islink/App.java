@@ -1,10 +1,10 @@
 package br.com.islink;
 
-import br.com.islink.boardgame.Board;
-import br.com.islink.boardgame.Position;
+import br.com.islink.chess.ChessMatch;
 
 public class App {
     public static void main(String[] args) {
-        Board board = new Board(3, 3);
+        ChessMatch chessMatch = new ChessMatch();
+        UI.printBoard(chessMatch.getPieces());
     }
 }
