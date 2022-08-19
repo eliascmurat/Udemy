@@ -1,7 +1,6 @@
 package br.com.islink.chess;
 
 import br.com.islink.boardgame.Board;
-import br.com.islink.boardgame.Position;
 import br.com.islink.chess.pieces.King;
 import br.com.islink.chess.pieces.Rook;
 
@@ -23,9 +22,13 @@ public class ChessMatch {
         return mat;
     }
 
+    private void placeNewPiece(char column, int row, ChessPiece chessPiece) {
+        board.placePiece(chessPiece, new ChessPosition(column, row).toPosition());
+    }
+
     private void initialSetup() {
-        board.placePiece(new Rook(board, Color.BLACK), new Position(0, 0));
-        board.placePiece(new Rook(board, Color.BLACK), new Position(0, 7));
-        board.placePiece(new King(board, Color.BLACK), new Position(0, 4));
+        placeNewPiece('a', 8, new Rook(board, Color.BLACK));
+        placeNewPiece('h', 8, new Rook(board, Color.BLACK));
+        placeNewPiece('e', 8, new King(board, Color.BLACK));
     }
 }
