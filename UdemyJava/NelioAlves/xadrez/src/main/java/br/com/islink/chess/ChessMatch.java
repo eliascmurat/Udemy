@@ -1,6 +1,8 @@
 package br.com.islink.chess;
 
 import br.com.islink.boardgame.Board;
+import br.com.islink.boardgame.Piece;
+import br.com.islink.boardgame.Position;
 import br.com.islink.chess.pieces.King;
 import br.com.islink.chess.pieces.Rook;
 
@@ -14,14 +16,39 @@ public class ChessMatch {
 
     public ChessPiece[][] getPieces() {
         ChessPiece[][] mat = new ChessPiece[board.getRows()][board.getColumns()];
+        
         for (int i = 0; i < board.getRows(); i++) {
             for (int j = 0; j < board.getColumns(); j++) {
                 mat[i][j] = (ChessPiece) board.getPiece(i, j);
             }
         }
+        
         return mat;
     }
 
+    public ChessPiece performChessMove(ChessPosition sourcePosition, ChessPosition targetPosition) {
+        Position source = sourcePosition.toPosition();
+        Position target = targetPosition.toPosition();
+        validateSourcePosition(source);
+        Piece capturedPiece = makeMove(source, target);
+
+        return (ChessPiece) capturedPiece;
+    }
+
+    private Piece makeMove(Position source, Position target) {
+        Piece piece = board.removePiece(source);
+        Piece capturedPiece = board.removePiece(target);
+        board.placePiece(piece, target);
+
+        return capturedPiece;
+    }
+
+    private void validateSourcePosition(Position position) {
+        if (!board.hasPiece(position)) {
+            throw new ChessException("There is no piece on source position");
+        }
+    }
+    
     private void placeNewPiece(char column, int row, ChessPiece chessPiece) {
         board.placePiece(chessPiece, new ChessPosition(column, row).toPosition());
     }
