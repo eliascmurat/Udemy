@@ -3,7 +3,7 @@ package br.com.islink.chess;
 import br.com.islink.boardgame.Board;
 import br.com.islink.boardgame.Piece;
 
-public class ChessPiece extends Piece {
+public abstract class ChessPiece extends Piece {
     private Color color;
 
     public ChessPiece(Board board, Color color) {
