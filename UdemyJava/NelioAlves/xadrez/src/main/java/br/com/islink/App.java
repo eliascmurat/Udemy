@@ -22,11 +22,11 @@ public class App {
                 
                 System.out.print("Source: ");
                 ChessPosition source = UI.readChessPosition(scanner);
-                chessMatch.validateSourcePosition(new Position(source.getRow(), source.getColumn() - 'a'));
+                chessMatch.validateSourcePosition(source.toPosition());
                 
                 System.out.print("Target: ");
                 ChessPosition target = UI.readChessPosition(scanner);
-                chessMatch.validateSourcePosition(new Position(target.getRow(), target.getColumn() - 'a'));
+                chessMatch.validateTargetPosition(source.toPosition(), target.toPosition());
 
                 ChessPiece capturedPiece = chessMatch.performChessMove(source, target);
             } catch (ChessException e) {
