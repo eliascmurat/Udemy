@@ -34,7 +34,7 @@ public class UI {
 
     public static ChessPosition readChessPosition(Scanner scanner) {
         try {
-            String input = scanner.nextLine();
+            String input = scanner.nextLine().toLowerCase();
             char column = input.charAt(0);
             int row = Integer.parseInt(input.substring(1));
     
