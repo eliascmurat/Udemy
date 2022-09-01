@@ -2,13 +2,17 @@ package br.com.islink.chess.pieces;
 
 import br.com.islink.boardgame.Board;
 import br.com.islink.boardgame.Position;
+import br.com.islink.chess.ChessMatch;
 import br.com.islink.chess.ChessPiece;
 import br.com.islink.chess.Color;
 
 public class King extends ChessPiece {
-    public King(Board board, Color color) {
-        super(board, color);
-    }
+	private ChessMatch chessMatch;
+	
+	public King(Board board, Color color, ChessMatch chessMatch) {
+		super(board, color);
+		this.chessMatch = chessMatch;
+	}
 
     @Override
     public String toString() {
