@@ -1,5 +1,8 @@
 package br.com.islink.chess;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import br.com.islink.boardgame.Board;
 import br.com.islink.boardgame.Piece;
 import br.com.islink.boardgame.Position;
@@ -10,6 +13,8 @@ public class ChessMatch {
     private Board board;
     private int turn;
     private Color currentPlayer;
+    private List<Piece> piecesOnTheBoard = new ArrayList<>();
+    private List<Piece> capturedPieces = new ArrayList<>();
 
     public ChessMatch() {
         board = new Board(8, 8);
@@ -60,6 +65,11 @@ public class ChessMatch {
         Piece capturedPiece = board.removePiece(target);
         board.placePiece(piece, target);
 
+        if (capturedPiece != null) {
+            piecesOnTheBoard.remove(capturedPiece);
+            capturedPieces.add(capturedPiece);
+        }
+
         return capturedPiece;
     }
 
@@ -90,6 +100,7 @@ public class ChessMatch {
     
     private void placeNewPiece(char column, int row, ChessPiece chessPiece) {
         board.placePiece(chessPiece, new ChessPosition(column, row).toPosition());
+        piecesOnTheBoard.add(chessPiece);
     }
 
     private void initialSetup() {
