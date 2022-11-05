@@ -1,5 +1,6 @@
 package br.com.eliascmurat.quarkussocial.rest;
 
+import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -14,17 +15,24 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import br.com.eliascmurat.quarkussocial.domain.model.User;
+import br.com.eliascmurat.quarkussocial.domain.repository.UserRepository;
 import br.com.eliascmurat.quarkussocial.rest.dto.CreateUserRequest;
-import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 
 @Path("/users")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class UserResource {
+    private UserRepository userRepository;
+
+    @Inject
+    public UserResource(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
     @GET
     public Response listAllUsers() {
-        PanacheQuery<PanacheEntityBase> query = User.findAll();
+        PanacheQuery<User> query = userRepository.findAll();
         
         return Response.ok(query.list()).build();
     }
@@ -35,7 +43,7 @@ public class UserResource {
         User user = new User();
         user.setAge(userRequest.getAge());
         user.setName(userRequest.getName());
-        user.persist();
+        userRepository.persist(user);
 
         return Response.ok(user).build();
     }
@@ -44,13 +52,13 @@ public class UserResource {
     @Path("{userId}")
     @Transactional
     public Response deleteUser(@PathParam("userId") Long userId) {
-        User user = User.findById(userId);
+        User user = userRepository.findById(userId);
 
         if (user == null) {
             return Response.status(Status.NOT_FOUND).build();
         }
 
-        user.delete();
+        userRepository.delete(user);
 
         return Response.ok().build();
     }
@@ -59,7 +67,7 @@ public class UserResource {
     @Path("{userId}")
     @Transactional
     public Response updateUser(@PathParam("userId") Long userId, CreateUserRequest userRequest) {
-        User user = User.findById(userId);
+        User user = userRepository.findById(userId);
 
         if (user == null) {
             return Response.status(Status.NOT_FOUND).build();
