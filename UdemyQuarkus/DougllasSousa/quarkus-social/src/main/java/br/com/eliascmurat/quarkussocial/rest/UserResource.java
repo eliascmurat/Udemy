@@ -1,7 +1,11 @@
 package br.com.eliascmurat.quarkussocial.rest;
 
+import java.util.Set;
+
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validator;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -17,6 +21,7 @@ import javax.ws.rs.core.Response.Status;
 import br.com.eliascmurat.quarkussocial.domain.model.User;
 import br.com.eliascmurat.quarkussocial.domain.repository.UserRepository;
 import br.com.eliascmurat.quarkussocial.rest.dto.CreateUserRequest;
+import br.com.eliascmurat.quarkussocial.rest.dto.ResponseError;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 
 @Path("/users")
@@ -24,10 +29,12 @@ import io.quarkus.hibernate.orm.panache.PanacheQuery;
 @Produces(MediaType.APPLICATION_JSON)
 public class UserResource {
     private UserRepository userRepository;
+    private Validator validator;
 
     @Inject
-    public UserResource(UserRepository userRepository) {
+    public UserResource(UserRepository userRepository, Validator validator) {
         this.userRepository = userRepository;
+        this.validator = validator;
     }
 
     @GET
@@ -40,12 +47,18 @@ public class UserResource {
     @POST
     @Transactional
     public Response createUser(CreateUserRequest userRequest) {
+        Set<ConstraintViolation<CreateUserRequest>> violations = validator.validate(userRequest);
+
+        if (!violations.isEmpty()) {        
+            return ResponseError.createFromValidation(violations).withStatusCode(ResponseError.UNPROCESSABLE_ENTITY_STATUS);
+        }
+
         User user = new User();
         user.setAge(userRequest.getAge());
         user.setName(userRequest.getName());
         userRepository.persist(user);
 
-        return Response.ok(user).build();
+        return Response.status(Status.CREATED).entity(user).build();
     }
 
     @DELETE
@@ -60,7 +73,7 @@ public class UserResource {
 
         userRepository.delete(user);
 
-        return Response.ok().build();
+        return Response.status(Status.NO_CONTENT).build();
     }
 
     @PUT
@@ -76,6 +89,6 @@ public class UserResource {
         user.setAge(userRequest.getAge());
         user.setName(userRequest.getName());
 
-        return Response.ok().build();
+        return Response.status(Status.NO_CONTENT).build();
     }
 }
