@@ -61,21 +61,6 @@ public class UserResource {
         return Response.status(Status.CREATED).entity(user).build();
     }
 
-    @DELETE
-    @Path("{userId}")
-    @Transactional
-    public Response deleteUser(@PathParam("userId") Long userId) {
-        User user = userRepository.findById(userId);
-
-        if (user == null) {
-            return Response.status(Status.NOT_FOUND).build();
-        }
-
-        userRepository.delete(user);
-
-        return Response.status(Status.NO_CONTENT).build();
-    }
-
     @PUT
     @Path("{userId}")
     @Transactional
@@ -88,6 +73,21 @@ public class UserResource {
 
         user.setAge(userRequest.getAge());
         user.setName(userRequest.getName());
+
+        return Response.status(Status.NO_CONTENT).build();
+    }
+
+    @DELETE
+    @Path("{userId}")
+    @Transactional
+    public Response deleteUser(@PathParam("userId") Long userId) {
+        User user = userRepository.findById(userId);
+
+        if (user == null) {
+            return Response.status(Status.NOT_FOUND).build();
+        }
+
+        userRepository.delete(user);
 
         return Response.status(Status.NO_CONTENT).build();
     }

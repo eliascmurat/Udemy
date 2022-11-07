@@ -5,8 +5,10 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -72,5 +74,47 @@ public class PostResoucer {
         postRepository.persist(post);
 
         return Response.status(Status.CREATED).build();
+    }
+
+    @PUT
+    @Path("{postId}")
+    @Transactional
+    public Response updatePost(@PathParam("userId") Long userId, @PathParam("postId") Long postId, CreatePostRequest postRequest) {
+        User user = userRepository.findById(userId);
+
+        if (user == null) {
+            return Response.status(Status.NOT_FOUND).build();
+        }
+
+        Post post = postRepository.findById(postId);
+
+        if (post == null) {
+            return Response.status(Status.NOT_FOUND).build();
+        }
+
+        post.setText(postRequest.getText());
+
+        return Response.status(Status.NO_CONTENT).build();
+    }
+
+    @DELETE
+    @Path("{postId}")
+    @Transactional
+    public Response deletePost(@PathParam("userId") Long userId, @PathParam("postId") Long postId) {
+        User user = userRepository.findById(userId);
+
+        if (user == null) {
+            return Response.status(Status.NOT_FOUND).build();
+        }
+
+        Post post = postRepository.findById(postId);
+
+        if (post == null) {
+            return Response.status(Status.NOT_FOUND).build();
+        }
+
+        postRepository.delete(post);
+
+        return Response.status(Status.NO_CONTENT).build();
     }
 }
