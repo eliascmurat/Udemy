@@ -7,6 +7,7 @@ import javax.transaction.Transactional;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -18,6 +19,7 @@ import javax.ws.rs.core.Response.Status;
 
 import br.com.eliascmurat.quarkussocial.domain.model.Post;
 import br.com.eliascmurat.quarkussocial.domain.model.User;
+import br.com.eliascmurat.quarkussocial.domain.repository.FollowerRepository;
 import br.com.eliascmurat.quarkussocial.domain.repository.PostRepository;
 import br.com.eliascmurat.quarkussocial.domain.repository.UserRepository;
 import br.com.eliascmurat.quarkussocial.rest.dto.CreatePostRequest;
@@ -29,22 +31,34 @@ import io.quarkus.panache.common.Sort.Direction;
 @Path("/users/{userId}/posts")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-public class PostResoucer {
+public class PostResource {
     private UserRepository userRepository;
     private PostRepository postRepository;
+    private FollowerRepository followerRepository;
 
     @Inject
-    public PostResoucer(UserRepository userRepository, PostRepository postRepository) {
+    public PostResource(UserRepository userRepository, PostRepository postRepository, FollowerRepository followerRepository) {
         this.userRepository = userRepository;
         this.postRepository = postRepository;
+        this.followerRepository = followerRepository;
     }
 
     @GET
-    public Response listPosts(@PathParam("userId") Long userId) {
+    public Response listPosts(@PathParam("userId") Long userId, @HeaderParam("followerId") Long followerId) {
         User user = userRepository.findById(userId);
 
         if (user == null) {
             return Response.status(Status.NOT_FOUND).build();
+        }
+
+        User follower = userRepository.findById(followerId);
+
+        if (follower == null) {
+            return Response.status(Status.NOT_FOUND).build();
+        }
+
+        if (!followerRepository.follows(follower, user)) {
+            return Response.status(Status.FORBIDDEN).entity("You can't see these posts").build();
         }
 
         PanacheQuery<Post> query = postRepository.find(
@@ -56,6 +70,7 @@ public class PostResoucer {
         List<Post> posts = query.list();
         
         return Response.ok(PostResponse.fromEntity(posts)).build();
+
     }
 
     @POST
