@@ -1,9 +1,11 @@
 package br.com.eliascmurat.quarkussocial.rest;
 
-import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validator;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -24,6 +26,7 @@ import br.com.eliascmurat.quarkussocial.domain.repository.PostRepository;
 import br.com.eliascmurat.quarkussocial.domain.repository.UserRepository;
 import br.com.eliascmurat.quarkussocial.rest.dto.CreatePostRequest;
 import br.com.eliascmurat.quarkussocial.rest.dto.PostResponse;
+import br.com.eliascmurat.quarkussocial.rest.dto.ResponseError;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Sort;
 import io.quarkus.panache.common.Sort.Direction;
@@ -35,9 +38,15 @@ public class PostResource {
     private UserRepository userRepository;
     private PostRepository postRepository;
     private FollowerRepository followerRepository;
+    private Validator validator;
 
     @Inject
-    public PostResource(UserRepository userRepository, PostRepository postRepository, FollowerRepository followerRepository) {
+    public PostResource(
+        UserRepository userRepository, 
+        PostRepository postRepository, 
+        FollowerRepository followerRepository,
+        Validator validator
+    ) {
         this.userRepository = userRepository;
         this.postRepository = postRepository;
         this.followerRepository = followerRepository;
@@ -45,15 +54,14 @@ public class PostResource {
 
     @GET
     public Response listPosts(@PathParam("userId") Long userId, @HeaderParam("followerId") Long followerId) {
-        User user = userRepository.findById(userId);
-
-        if (user == null) {
-            return Response.status(Status.NOT_FOUND).build();
+        if (followerId == null) {
+            return Response.status(Status.BAD_REQUEST).build();
         }
 
+        User user = userRepository.findById(userId);
         User follower = userRepository.findById(followerId);
 
-        if (follower == null) {
+        if (user == null || follower == null) {
             return Response.status(Status.NOT_FOUND).build();
         }
 
@@ -67,10 +75,7 @@ public class PostResource {
             user
         );
         
-        List<Post> posts = query.list();
-        
-        return Response.ok(PostResponse.fromEntity(posts)).build();
-
+        return Response.ok(PostResponse.fromEntity(query.list())).build();
     }
 
     @POST
@@ -80,6 +85,14 @@ public class PostResource {
 
         if (user == null) {
             return Response.status(Status.NOT_FOUND).build();
+        }
+
+        Set<ConstraintViolation<CreatePostRequest>> violations = validator.validate(postRequest);
+
+        if (!violations.isEmpty()) {
+            return ResponseError
+                    .createFromValidation(violations)
+                    .withStatusCode(ResponseError.UNPROCESSABLE_ENTITY_STATUS);
         }
 
         Post post = new Post();
@@ -92,19 +105,22 @@ public class PostResource {
     }
 
     @PUT
-    @Path("{postId}")
+    @Path("/{postId}")
     @Transactional
     public Response updatePost(@PathParam("userId") Long userId, @PathParam("postId") Long postId, CreatePostRequest postRequest) {
         User user = userRepository.findById(userId);
+        Post post = postRepository.findById(postId);
 
-        if (user == null) {
+        if (user == null || post == null) {
             return Response.status(Status.NOT_FOUND).build();
         }
 
-        Post post = postRepository.findById(postId);
+        Set<ConstraintViolation<CreatePostRequest>> violations = validator.validate(postRequest);
 
-        if (post == null) {
-            return Response.status(Status.NOT_FOUND).build();
+        if (!violations.isEmpty()) {
+            return ResponseError
+                    .createFromValidation(violations)
+                    .withStatusCode(ResponseError.UNPROCESSABLE_ENTITY_STATUS);
         }
 
         post.setText(postRequest.getText());
@@ -113,23 +129,15 @@ public class PostResource {
     }
 
     @DELETE
-    @Path("{postId}")
+    @Path("/{postId}")
     @Transactional
     public Response deletePost(@PathParam("userId") Long userId, @PathParam("postId") Long postId) {
         User user = userRepository.findById(userId);
-
-        if (user == null) {
-            return Response.status(Status.NOT_FOUND).build();
-        }
-
         Post post = postRepository.findById(postId);
+        boolean deleted = userRepository.deleteById(userId);
 
-        if (post == null) {
-            return Response.status(Status.NOT_FOUND).build();
-        }
-
-        postRepository.delete(post);
-
-        return Response.status(Status.NO_CONTENT).build();
+        return (user == null || post == null || !deleted) 
+            ? Response.status(Status.NOT_FOUND).build()
+            : Response.noContent().build();
     }
 }

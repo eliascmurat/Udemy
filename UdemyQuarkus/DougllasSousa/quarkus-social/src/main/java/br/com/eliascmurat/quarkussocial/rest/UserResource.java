@@ -40,17 +40,28 @@ public class UserResource {
     @GET
     public Response listAllUsers() {
         PanacheQuery<User> query = userRepository.findAll();
-        
         return Response.ok(query.list()).build();
     }
+
+    @GET
+    @Path("/{userId}")
+    public Response findById(@PathParam("userId") Long userId) {
+        User query = userRepository.findById(userId);
+        return query != null
+                ? Response.ok(query).build()
+                : Response.status(Status.NOT_FOUND).build();
+    }
+
 
     @POST
     @Transactional
     public Response createUser(CreateUserRequest userRequest) {
         Set<ConstraintViolation<CreateUserRequest>> violations = validator.validate(userRequest);
 
-        if (!violations.isEmpty()) {        
-            return ResponseError.createFromValidation(violations).withStatusCode(ResponseError.UNPROCESSABLE_ENTITY_STATUS);
+        if (!violations.isEmpty()) {
+            return ResponseError
+                    .createFromValidation(violations)
+                    .withStatusCode(ResponseError.UNPROCESSABLE_ENTITY_STATUS);
         }
 
         User user = new User();
@@ -62,7 +73,7 @@ public class UserResource {
     }
 
     @PUT
-    @Path("{userId}")
+    @Path("/{userId}")
     @Transactional
     public Response updateUser(@PathParam("userId") Long userId, CreateUserRequest userRequest) {
         User user = userRepository.findById(userId);
@@ -71,24 +82,29 @@ public class UserResource {
             return Response.status(Status.NOT_FOUND).build();
         }
 
+        Set<ConstraintViolation<CreateUserRequest>> violations = validator.validate(userRequest);
+
+        if (!violations.isEmpty()) {
+            return ResponseError
+                    .createFromValidation(violations)
+                    .withStatusCode(ResponseError.UNPROCESSABLE_ENTITY_STATUS);
+        }
+
         user.setAge(userRequest.getAge());
         user.setName(userRequest.getName());
 
-        return Response.status(Status.NO_CONTENT).build();
+        return Response.noContent().build();
     }
 
     @DELETE
-    @Path("{userId}")
+    @Path("/{userId}")
     @Transactional
     public Response deleteUser(@PathParam("userId") Long userId) {
         User user = userRepository.findById(userId);
+        boolean deleted = userRepository.deleteById(userId);
 
-        if (user == null) {
-            return Response.status(Status.NOT_FOUND).build();
-        }
-
-        userRepository.delete(user);
-
-        return Response.status(Status.NO_CONTENT).build();
+        return (user == null || !deleted) 
+            ? Response.status(Status.NOT_FOUND).build()
+            : Response.noContent().build();
     }
 }

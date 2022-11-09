@@ -1,9 +1,12 @@
 package br.com.eliascmurat.quarkussocial.rest;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validator;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -23,6 +26,7 @@ import br.com.eliascmurat.quarkussocial.domain.repository.UserRepository;
 import br.com.eliascmurat.quarkussocial.rest.dto.FollowerRequest;
 import br.com.eliascmurat.quarkussocial.rest.dto.FollowerResponse;
 import br.com.eliascmurat.quarkussocial.rest.dto.FollowersPerUserResponse;
+import br.com.eliascmurat.quarkussocial.rest.dto.ResponseError;
 
 @Path("/users/{userId}/followers")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -30,11 +34,17 @@ import br.com.eliascmurat.quarkussocial.rest.dto.FollowersPerUserResponse;
 public class FollowerResource {
     private FollowerRepository followerRepository;
     private UserRepository userRepository;
+    private Validator validator;
 
     @Inject
-    public FollowerResource(FollowerRepository followerRepository, UserRepository userRepository) {
+    public FollowerResource(
+        FollowerRepository followerRepository, 
+        UserRepository userRepository,
+        Validator validator
+    ) {
         this.followerRepository = followerRepository;
         this.userRepository = userRepository;
+        this.validator = validator;
     }
 
     @GET
@@ -57,19 +67,22 @@ public class FollowerResource {
     @PUT
     @Transactional
     public Response followUser(@PathParam("userId") Long userId, FollowerRequest followerRequest) {
+        Set<ConstraintViolation<FollowerRequest>> violations = validator.validate(followerRequest);
+
+        if (!violations.isEmpty()) {
+            return ResponseError
+                    .createFromValidation(violations)
+                    .withStatusCode(ResponseError.UNPROCESSABLE_ENTITY_STATUS);
+        }
+        
         if (userId.equals(followerRequest.getFollowerId())) {
             return Response.status(Status.CONFLICT).entity("You can't follow yourself").build();
         }
 
         User user = userRepository.findById(userId);
-
-        if (user == null) {
-            return Response.status(Status.NOT_FOUND).build();
-        }
-
         User follower = userRepository.findById(followerRequest.getFollowerId());
 
-        if (follower == null) {
+        if (user == null || follower == null) {
             return Response.status(Status.NOT_FOUND).build();
         }
 
@@ -94,22 +107,15 @@ public class FollowerResource {
         }
 
         User user = userRepository.findById(userId);
-
-        if (user == null) {
-            return Response.status(Status.NOT_FOUND).build();
-        }
-
         User follower = userRepository.findById(followerId);
 
-        if (follower == null) {
+        if (user == null || follower == null) {
             return Response.status(Status.NOT_FOUND).build();
-        }
+        } 
 
         boolean follows = followerRepository.follows(follower, user);
 
-        if (follows) {
-            followerRepository.deleteByFollowerAndUser(followerId, userId);
-        }
+        if (follows) followerRepository.deleteByFollowerAndUser(followerId, userId);
 
         return Response.status(Status.NO_CONTENT).build();
     }

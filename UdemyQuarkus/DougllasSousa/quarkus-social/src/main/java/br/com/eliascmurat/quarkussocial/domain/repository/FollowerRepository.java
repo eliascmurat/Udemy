@@ -14,17 +14,18 @@ import io.quarkus.panache.common.Parameters;
 
 @ApplicationScoped
 public class FollowerRepository implements PanacheRepository<Follower> { 
-    public boolean follows(User follower, User user) {
-        Map<String, Object> params = Parameters.with("follower", follower).and("user", user).map();
-        PanacheQuery<Follower> query = find("follower = :follower and user = :user", params);
-        Optional<Follower> result = query.firstResultOptional();
-        
-        return result.isPresent();
+    public boolean follows(User followerUser, User user) {
+        Parameters params = Parameters.with("followerUser", followerUser).and("user", user);
+        PanacheQuery<Follower> query = find("followerUser = :followerUser and user = :user", params);
+        return query.firstResultOptional().isPresent();
+    }
+
+    public List<Follower> findByUser(User user) {
+        return find("user", user).list();
     }
 
     public List<Follower> findByUser(Long userId) {
-        PanacheQuery<Follower> query = find("user.id", userId);
-        return query.list();
+        return find("user.id", userId).list();
     }
 
     public void deleteByFollowerAndUser(Long followerId, Long userId) {
