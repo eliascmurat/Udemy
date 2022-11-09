@@ -4,7 +4,6 @@ import java.util.List;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
-import javax.validation.Validator;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -79,7 +78,7 @@ public class FollowerResource {
         if (!follows) {
             Follower entity = new Follower();
             entity.setUser(user);
-            entity.setFollower(follower);
+            entity.setFollowerUser(follower);
     
             followerRepository.persist(entity);        
         }

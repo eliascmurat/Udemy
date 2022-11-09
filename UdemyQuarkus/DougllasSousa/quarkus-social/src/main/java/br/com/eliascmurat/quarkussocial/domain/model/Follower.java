@@ -24,5 +24,5 @@ public class Follower {
     
     @ManyToOne
     @JoinColumn(name = "follower_id")
-    private User follower;
+    private User followerUser;
 }

@@ -14,7 +14,7 @@ public class FollowerResponse {
     public static FollowerResponse fromEntity(Follower follower) {
         FollowerResponse followerResponse = new FollowerResponse();
         followerResponse.setId(follower.getId());
-        followerResponse.setName(follower.getFollower().getName());
+        followerResponse.setName(follower.getFollowerUser().getName());
 
         return followerResponse;
     }
