@@ -5,9 +5,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import br.com.eliascmurat.quarkussocial.domain.model.Post;
-import lombok.Data;
 
-@Data
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class PostResponse {
     private String text;
     private LocalDateTime dateTime;

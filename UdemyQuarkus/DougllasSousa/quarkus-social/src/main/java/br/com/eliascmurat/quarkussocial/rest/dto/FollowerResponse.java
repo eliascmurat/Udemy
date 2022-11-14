@@ -4,9 +4,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import br.com.eliascmurat.quarkussocial.domain.model.Follower;
-import lombok.Data;
 
-@Data
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class FollowerResponse {
     private Long id;
     private String name;

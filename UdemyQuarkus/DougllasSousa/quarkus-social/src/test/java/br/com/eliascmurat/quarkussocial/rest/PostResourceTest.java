@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
-// import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.Response.Status;
 
 @QuarkusTest
 @TestHTTPEndpoint(PostResource.class)
@@ -46,18 +46,17 @@ class PostResourceTest {
         userId = user.getId();
     }
 
-    /*
-    @Test
-    @DisplayName("Should return 404 when user does not exist")
-    void listAllUserNotFoundTest() {
-        given()
-            .contentType(ContentType.JSON)
-            .pathParams("userId", 0)
-        .when()
-            .get()
-        .then()
-            .statusCode(Status.NOT_FOUND.getStatusCode());
-    }
+    // @Test
+    // @DisplayName("Should return 404 when user does not exist")
+    // void listAllUserNotFoundTest() {
+    //     given()
+    //         .contentType(ContentType.JSON)
+    //         .pathParams("userId", 0)
+    //     .when()
+    //         .get()
+    //     .then()
+    //         .statusCode(Status.NOT_FOUND.getStatusCode());
+    // }
 
     @Test
     @DisplayName("Should return 400 when followerId header is not present")
@@ -83,7 +82,6 @@ class PostResourceTest {
     void listPostTest() {
         
     }
-    */
 
     @Test
     @DisplayName("Should create a post for a user")
