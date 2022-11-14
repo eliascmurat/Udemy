@@ -1,8 +1,8 @@
 package br.com.eliascmurat.quarkussocial.rest.dto;
 
-import lombok.Data;
+import lombok.Getter;
 
-@Data
+@Getter
 public class FieldError {
     private String field;
     private String error;
