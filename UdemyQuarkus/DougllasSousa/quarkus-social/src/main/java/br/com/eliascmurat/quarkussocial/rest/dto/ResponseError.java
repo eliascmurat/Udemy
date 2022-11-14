@@ -8,9 +8,9 @@ import java.util.stream.Collectors;
 import javax.validation.ConstraintViolation;
 import javax.ws.rs.core.Response;
 
-import lombok.Data;
+import lombok.Getter;
 
-@Data
+@Getter
 public class ResponseError {
     public static final int UNPROCESSABLE_ENTITY_STATUS = 422;
 

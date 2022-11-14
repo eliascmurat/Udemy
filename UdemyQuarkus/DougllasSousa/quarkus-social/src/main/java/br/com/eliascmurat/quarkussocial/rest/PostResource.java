@@ -50,11 +50,12 @@ public class PostResource {
         this.userRepository = userRepository;
         this.postRepository = postRepository;
         this.followerRepository = followerRepository;
+        this.validator = validator;
     }
 
     @GET
     public Response listPosts(@PathParam("userId") Long userId, @HeaderParam("followerId") Long followerId) {
-        if (followerId == null) {
+        if (userId == null || followerId == null) {
             return Response.status(Status.BAD_REQUEST).build();
         }
 

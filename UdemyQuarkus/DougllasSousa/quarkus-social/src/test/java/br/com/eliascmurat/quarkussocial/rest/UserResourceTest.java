@@ -1,6 +1,7 @@
 package br.com.eliascmurat.quarkussocial.rest;
 
-import org.hamcrest.Matchers;
+// import org.hamcrest.Matchers;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -27,21 +28,21 @@ class UserResourceTest {
     @TestHTTPResource("/users")
     URL apiURL;
 
-    @Test
-    @DisplayName("Should list all users")
-    @Order(3)
-    void listAllUsersTest() {
-        given()
-            .contentType(ContentType.JSON)
-        .when()
-            .get(apiURL)
-        .then()
-            .statusCode(200)
-            .body("size()", Matchers.is(1));
-    }
+    // @Test
+    // @DisplayName("Should list all users")
+    // @Order(3)
+    // void listAllUsersTest() {
+    //     given()
+    //         .contentType(ContentType.JSON)
+    //     .when()
+    //         .get(apiURL)
+    //     .then()
+    //         .statusCode(200)
+    //         .body("size()", Matchers.is(1));
+    // }
 
     @Test
-    @DisplayName("Should create an user successfully")
+    @DisplayName("Should create a user successfully")
     @Order(1)
     void createUserTest() {
         CreateUserRequest user = new CreateUserRequest();
