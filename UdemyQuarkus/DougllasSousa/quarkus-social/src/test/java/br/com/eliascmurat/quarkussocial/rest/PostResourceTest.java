@@ -1,8 +1,10 @@
 package br.com.eliascmurat.quarkussocial.rest;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
@@ -46,41 +48,40 @@ class PostResourceTest {
         userId = user.getId();
     }
 
-    // @Test
-    // @DisplayName("Should return 404 when user does not exist")
-    // void listAllUserNotFoundTest() {
-    //     given()
-    //         .contentType(ContentType.JSON)
-    //         .pathParams("userId", 0)
-    //     .when()
-    //         .get()
-    //     .then()
-    //         .statusCode(Status.NOT_FOUND.getStatusCode());
-    // }
-
     @Test
     @DisplayName("Should return 400 when followerId header is not present")
     void listPostFollowerHeaderNotSendTest() {
-        
+        given()
+            .pathParam("userId", userId)
+        .when()
+            .get()
+        .then()
+            .statusCode(Status.BAD_REQUEST.getStatusCode())
+            .body(Matchers.is("You forgot the header followerId"));
     }
 
+    @Test
+    @DisplayName("Should return 404 when userId doens't exist")
+    void listPostUserNotFoundTest() {
+        given()
+            .pathParam("userId", 0)
+            .header("followerId", userId)
+        .when()
+            .get()
+        .then()
+            .statusCode(Status.NOT_FOUND.getStatusCode());
+    }
     
     @Test
     @DisplayName("Should return 400 when follower doesn't exist")
     void listPostFollowerNotFoundTest() {
-        
-    }
-
-    @Test
-    @DisplayName("Should return 403 when follower isn't a follow")
-    void listPostNotAFollowerTest() {
-        
-    }
-
-    @Test
-    @DisplayName("Should return posts")
-    void listPostTest() {
-        
+        given()
+            .pathParam("userId", userId)
+            .header("followerId", 0)
+        .when()
+            .get()
+        .then()
+            .statusCode(Status.NOT_FOUND.getStatusCode());
     }
 
     @Test
