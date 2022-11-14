@@ -1,6 +1,5 @@
 package br.com.eliascmurat.quarkussocial.rest;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -11,7 +10,9 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
+import br.com.eliascmurat.quarkussocial.domain.model.Follower;
 import br.com.eliascmurat.quarkussocial.domain.model.User;
+import br.com.eliascmurat.quarkussocial.domain.repository.FollowerRepository;
 import br.com.eliascmurat.quarkussocial.domain.repository.UserRepository;
 import br.com.eliascmurat.quarkussocial.rest.dto.CreatePostRequest;
 import br.com.eliascmurat.quarkussocial.rest.dto.ResponseError;
@@ -34,7 +35,11 @@ class PostResourceTest {
     @Inject
     UserRepository userRepository;
 
+    @Inject
+    FollowerRepository followerRepository;
+
     Long userId;
+    Long followerId;
 
     @BeforeEach
     @Transactional
@@ -42,10 +47,19 @@ class PostResourceTest {
         User user = new User();
         user.setName("Fulano");        
         user.setAge(19);  
-        
         userRepository.persist(user);
-
         userId = user.getId();
+
+        User follower = new User();
+        user.setName("Ciclano");        
+        user.setAge(19);  
+        userRepository.persist(follower);
+        followerId = follower.getId();
+
+        Follower entity = new Follower();
+        entity.setUser(user);
+        entity.setFollowerUser(follower);
+        followerRepository.persist(entity);
     }
 
     @Test
@@ -73,15 +87,27 @@ class PostResourceTest {
     }
     
     @Test
-    @DisplayName("Should return 400 when follower doesn't exist")
-    void listPostFollowerNotFoundTest() {
+    @DisplayName("Should return 403 when user isn't a follower")
+    void listPostNotAFollowerTest() {
         given()
             .pathParam("userId", userId)
-            .header("followerId", 0)
+            .header("followerId", userId)
         .when()
             .get()
         .then()
-            .statusCode(Status.NOT_FOUND.getStatusCode());
+            .statusCode(Status.FORBIDDEN.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Should list post")
+    void listPostTest() {
+        given()
+            .pathParam("userId", userId)
+            .header("followerId", followerId)
+        .when()
+            .get()
+        .then()
+            .statusCode(Status.OK.getStatusCode());
     }
 
     @Test
